@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Get Test IDs by Rank</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Get Test IDs by Rank</h1>
+
+    <form method="post" action="/getTestIdByRank">
+        <label for="rank">Rank:</label>
+        <input type="number" name="rank" id="rank" required value="{{ rank or '' }}">
+
+        <label for="model_name">Model Name:</label>
+        <select name="model_name" id="model_name" required>
+            <option value="LR" {% if model_name=='LR' %}selected{% endif %}>Logistic Regression</option>
+            <option value="GB" {% if model_name=='GB' %}selected{% endif %}>Gradient Boost</option>
+            <option value="BOTH" {% if model_name=='BOTH' %}selected{% endif %}>Both</option>
+        </select>
+
+        <button type="submit">Submit</button>
+    </form>
+    {% if lr %}
+    <h2>Test IDs by Logistic Regression:</h2>
+    <div class="id-box">{{ lr | join(', ') }}</div>
+    {% elif model_name in ['LR', 'BOTH'] %}
+    <p>No results found for Logistic Regression.</p>
+    {% endif %}
+
+    {% if gb %}
+    <h2>Test IDs by Gradient Boost:</h2>
+    <div class="id-box">{{ gb | join(', ') }}</div>
+    {% elif model_name in ['GB', 'BOTH'] %}
+    <p>No results found for Gradient Boost.</p>
+    {% endif %}
+
+</body>
+
+</html>
