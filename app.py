@@ -8,7 +8,7 @@ df_ranked = None  # global dataset
 def index():
     return render_template('get_test_id.html')
 
-@app.route('/Train_data', methods=['GET', 'POST'])
+@app.route('/Train_data', methods=['GET'])
 def train_data():
     global df_ranked
     df_ranked = get_ranked_dataframe()
@@ -20,7 +20,6 @@ def get_test_id_by_rank():
     if df_ranked is None:
         return jsonify({"error": "Model not trained. Please call /Train_data first."}), 400
 
-    # Support form, query params, and JSON input
     if request.is_json:
         data = request.get_json()
         rank = data.get('rank')
@@ -29,7 +28,6 @@ def get_test_id_by_rank():
         rank = request.values.get('rank')
         model_name = request.values.get('model_name', '').upper()
 
-    # Validate input
     try:
         rank = int(rank)
     except (ValueError, TypeError):
@@ -38,21 +36,32 @@ def get_test_id_by_rank():
     if model_name not in ['LR', 'GB', 'BOTH']:
         return jsonify({"error": "Invalid 'model_name'. Must be one of 'LR', 'GB', 'BOTH'"}), 400
 
-    lr = gb = None
+    lr = gb = []
     if model_name in ['LR', 'BOTH']:
         lr = df_ranked[df_ranked['Ranks by Logistic Regression'] == rank]['TestId'].dropna().tolist()
     if model_name in ['GB', 'BOTH']:
         gb = df_ranked[df_ranked['Ranks by Gradient Boost'] == rank]['TestId'].dropna().tolist()
 
-    # If API call (Accept JSON), return JSON response
-    if request.is_json or request.args:
-        return jsonify({
-            "LR": lr if model_name in ['LR', 'BOTH'] else None,
-            "GB": gb if model_name in ['GB', 'BOTH'] else None
-        })
+    # Prepare extra info for template
+    lr_set, gb_set = set(lr), set(gb)
+    context = {
+        "rank": rank,
+        "model_name": model_name,
+        "lr": lr,
+        "gb": gb
+    }
 
-    # Else render HTML form result
-    return render_template('get_test_id.html', rank=rank, model_name=model_name, lr=lr, gb=gb)
+    if model_name == 'BOTH':
+        context.update({
+            "common_ids": list(lr_set & gb_set),
+            "unique_lr_only": list(lr_set - gb_set),
+            "unique_gb_only": list(gb_set - lr_set),
+        })
+    else:
+        context["unique_count"] = len(lr_set or gb_set)
+
+    return render_template('get_test_id.html', **context)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

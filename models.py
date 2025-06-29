@@ -68,14 +68,14 @@ def assign_rank(prob):
     else:
         return 5
 
-def add_ranks(models, X_all, df, mask):
+def add_ranks(models, X_all, df_filtered):
     for name, model in models.items():
         probs = model.predict_proba(X_all)
         probabilities = probs[:, 1]
         ranks = [assign_rank(p) for p in probabilities]
-        df[f"Ranks by {name}"] = np.nan
-        df.loc[mask, f"Ranks by {name}"] = ranks
-    return df
+        df_filtered[f"Ranks by {name}"] = np.nan
+        df_filtered[f"Ranks by {name}"] = ranks
+    return df_filtered
 
 def display_rank_summary(df):
     print(df['Ranks by Logistic Regression'].value_counts())
@@ -94,7 +94,7 @@ def get_ranked_dataframe():
 
     X_all_encoded = encoder.transform(X)
 
-    df_ranked = add_ranks(models, X_all_encoded, df, mask)
+    df_ranked = add_ranks(models, X_all_encoded, df_filtered)
     summary_df = display_rank_summary(df_ranked)
     return df_ranked
 

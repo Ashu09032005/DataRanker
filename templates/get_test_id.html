@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Get Test IDs by Rank</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-
+    <style>
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #555;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .summary {
+            margin-top: 30px;
+        }
+    </style>
 </head>
-
 <body>
     <h1>Get Test IDs by Rank</h1>
 
@@ -25,20 +39,68 @@
 
         <button type="submit">Submit</button>
     </form>
-    {% if lr %}
-    <h2>Test IDs by Logistic Regression:</h2>
-    <div class="id-box">{{ lr | join(', ') }}</div>
-    {% elif model_name in ['LR', 'BOTH'] %}
-    <p>No results found for Logistic Regression.</p>
+
+    {% if model_name in ['LR', 'GB', 'BOTH'] %}
+        <h2>Test IDs for Rank {{ rank }}</h2>
+
+        {% if lr or gb %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Logistic Regression</th>
+                    <th>Gradient Boost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set max_len = [lr|length if lr else 0, gb|length if gb else 0]|max %}
+                {% for i in range(max_len) %}
+                <tr>
+                    <td>
+                        {% if model_name in ['LR', 'BOTH'] and i < lr|length %}
+                            {{ lr[i] }}
+                        {% elif model_name == 'GB' %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if model_name in ['GB', 'BOTH'] and i < gb|length %}
+                            {{ gb[i] }}
+                        {% elif model_name == 'LR' %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No Test IDs found for the selected rank and model.</p>
+        {% endif %}
     {% endif %}
 
-    {% if gb %}
-    <h2>Test IDs by Gradient Boost:</h2>
-    <div class="id-box">{{ gb | join(', ') }}</div>
-    {% elif model_name in ['GB', 'BOTH'] %}
-    <p>No results found for Gradient Boost.</p>
-    {% endif %}
+    {% if model_name == 'BOTH' %}
+    <div class="summary">
+        <h3>Summary for Rank {{ rank }}</h3>
+        <ul>
+            <li><strong>Common Test IDs:</strong> {{ common_ids | length }}</li>
+            <li><strong>Only in Logistic Regression:</strong> {{ unique_lr_only | length }}</li>
+            <li><strong>Only in Gradient Boost:</strong> {{ unique_gb_only | length }}</li>
+        </ul>
 
+        <h4>Common Test IDs:</h4>
+        <div>{{ common_ids | join(', ') }}</div>
+
+        <h4>Only in Logistic Regression:</h4>
+        <div>{{ unique_lr_only | join(', ') }}</div>
+
+        <h4>Only in Gradient Boost:</h4>
+        <div>{{ unique_gb_only | join(', ') }}</div>
+    </div>
+    {% elif model_name in ['LR', 'GB'] %}
+    <div class="summary">
+        <h3>Total Unique Test IDs for Rank {{ rank }}:</h3>
+        <p>{{ unique_count }}</p>
+    </div>
+    {% endif %}
 </body>
-
 </html>
