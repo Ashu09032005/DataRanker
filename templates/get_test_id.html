@@ -3,23 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <title>Get Test IDs by Rank</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        table {
-            border-collapse: collapse;
-            margin-top: 20px;
-            width: 80%;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 40px;
+            color: #333;
         }
-        th, td {
-            border: 1px solid #555;
-            padding: 10px;
-            text-align: center;
+
+        h1 {
+            color: #1d3557;
+            margin-bottom: 20px;
         }
-        th {
-            background-color: #f2f2f2;
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
         }
-        .summary {
+
+        label {
+            font-weight: 600;
+        }
+
+        input[type="number"],
+        select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        h2 {
+            color: #343a40;
             margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: white;
+            border: 1px solid #bbb;
+        }
+
+        th, td {
+            border: 1px solid #bbb;
+            padding: 10px 12px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f1f1f1;
+            font-weight: 600;
+        }
+
+        .scrollable-cell {
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        details summary {
+            cursor: pointer;
+            color: #007bff;
+            font-weight: 500;
+        }
+
+        details summary:hover {
+            text-decoration: underline;
+        }
+
+        p {
+            color: #dc3545;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -44,63 +123,84 @@
         <h2>Test IDs for Rank {{ rank }}</h2>
 
         {% if lr or gb %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Logistic Regression</th>
-                    <th>Gradient Boost</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% set max_len = [lr|length if lr else 0, gb|length if gb else 0]|max %}
-                {% for i in range(max_len) %}
-                <tr>
-                    <td>
-                        {% if model_name in ['LR', 'BOTH'] and i < lr|length %}
-                            {{ lr[i] }}
-                        {% elif model_name == 'GB' %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if model_name in ['GB', 'BOTH'] and i < gb|length %}
-                            {{ gb[i] }}
-                        {% elif model_name == 'LR' %}
-                            N/A
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Selected Rank</th>
+                        <th>Total TC's</th>
+                        <th>TC's in LR</th>
+                        <th>Count of LR</th>
+                        <th>TC's in GB</th>
+                        <th>Count of GB</th>
+                        <th>Common in Both</th>
+                        <th>Count of Both</th>
+                        <th>Present in LR not in GB</th>
+                        <th>Count</th>
+                        <th>Present in GB not in LR</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ rank }}</td>
+                        <td>{{ total_tc }}</td>
+                        <td>
+                            <div class="scrollable-cell">
+                                <details>
+                                    <summary>Show LR IDs</summary>
+                                    {{ lr | join(', ') if lr else 'N/A' }}
+                                </details>
+                            </div>
+                        </td>
+                        <td>{{ lr | length }}</td>
+                        <td>
+                            <div class="scrollable-cell">
+                                <details>
+                                    <summary>Show GB IDs</summary>
+                                    {{ gb | join(', ') if gb else 'N/A' }}
+                                </details>
+                            </div>
+                        </td>
+                        <td>{{ gb | length }}</td>
+                        <td>
+                            <div class="scrollable-cell">
+                            {% if model_name == 'BOTH' %}
+                                <details>
+                                    <summary>Show Common IDs</summary>
+                                    {{ common_ids | join(', ') }}
+                                </details>
+                            {% else %} N/A {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ common_ids | length if model_name == 'BOTH' else 'N/A' }}</td>
+                        <td>
+                            <div class="scrollable-cell">
+                            {% if model_name == 'BOTH' %}
+                                <details>
+                                    <summary>Show Unique LR</summary>
+                                    {{ unique_lr_only | join(', ') }}
+                                </details>
+                            {% else %} N/A {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ unique_lr_only | length if model_name == 'BOTH' else 'N/A' }}</td>
+                        <td>
+                            <div class="scrollable-cell">
+                            {% if model_name == 'BOTH' %}
+                                <details>
+                                    <summary>Show Unique GB</summary>
+                                    {{ unique_gb_only | join(', ') }}
+                                </details>
+                            {% else %} N/A {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ unique_gb_only | length if model_name == 'BOTH' else 'N/A' }}</td>
+                    </tr>
+                </tbody>
+            </table>
         {% else %}
-        <p>No Test IDs found for the selected rank and model.</p>
+            <p>No Test IDs found for the selected rank and model.</p>
         {% endif %}
-    {% endif %}
-
-    {% if model_name == 'BOTH' %}
-    <div class="summary">
-        <h3>Summary for Rank {{ rank }}</h3>
-        <ul>
-            <li><strong>Common Test IDs:</strong> {{ common_ids | length }}</li>
-            <li><strong>Only in Logistic Regression:</strong> {{ unique_lr_only | length }}</li>
-            <li><strong>Only in Gradient Boost:</strong> {{ unique_gb_only | length }}</li>
-        </ul>
-
-        <h4>Common Test IDs:</h4>
-        <div>{{ common_ids | join(', ') }}</div>
-
-        <h4>Only in Logistic Regression:</h4>
-        <div>{{ unique_lr_only | join(', ') }}</div>
-
-        <h4>Only in Gradient Boost:</h4>
-        <div>{{ unique_gb_only | join(', ') }}</div>
-    </div>
-    {% elif model_name in ['LR', 'GB'] %}
-    <div class="summary">
-        <h3>Total Unique Test IDs for Rank {{ rank }}:</h3>
-        <p>{{ unique_count }}</p>
-    </div>
     {% endif %}
 </body>
 </html>

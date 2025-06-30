@@ -42,20 +42,23 @@ def get_test_id_by_rank():
     if model_name in ['GB', 'BOTH']:
         gb = df_ranked[df_ranked['Ranks by Gradient Boost'] == rank]['TestId'].dropna().tolist()
 
-    # Prepare extra info for template
-    lr_set, gb_set = set(lr), set(gb)
+    lr_set = set(lr)
+    gb_set = set(gb)
+    all_unique_tc = lr_set | gb_set
+
     context = {
         "rank": rank,
         "model_name": model_name,
-        "lr": lr,
-        "gb": gb
+        "lr": sorted(lr),
+        "gb": sorted(gb),
+        "total_tc": len(all_unique_tc)
     }
 
     if model_name == 'BOTH':
         context.update({
-            "common_ids": list(lr_set & gb_set),
-            "unique_lr_only": list(lr_set - gb_set),
-            "unique_gb_only": list(gb_set - lr_set),
+            "common_ids": sorted(lr_set & gb_set),
+            "unique_lr_only": sorted(lr_set - gb_set),
+            "unique_gb_only": sorted(gb_set - lr_set),
         })
     else:
         context["unique_count"] = len(lr_set or gb_set)
