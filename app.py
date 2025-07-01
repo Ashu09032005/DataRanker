@@ -47,11 +47,11 @@ def get_test_id_by_rank():
     all_unique_tc = lr_set | gb_set
 
     context = {
-        "rank": rank,
-        "model_name": model_name,
-        "lr": sorted(lr),
-        "gb": sorted(gb),
-        "total_tc": len(all_unique_tc)
+    "rank": rank,
+    "model_name": model_name,
+    "lr_ids": lr_set,
+    "gb_ids": gb_set,
+    "total_tc": len(lr_set)+ len(gb_set),
     }
 
     if model_name == 'BOTH':

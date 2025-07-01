@@ -103,104 +103,104 @@
     </style>
 </head>
 <body>
-    <h1>Get Test IDs by Rank</h1>
+<h1>Get Test IDs by Rank</h1>
 
-    <form method="post" action="/getTestIdByRank">
-        <label for="rank">Rank:</label>
-        <input type="number" name="rank" id="rank" required value="{{ rank or '' }}">
+<form method="post" action="/getTestIdByRank">
+    <label for="rank">Rank:</label>
+    <input type="number" name="rank" id="rank" required value="{{ rank or '' }}">
 
-        <label for="model_name">Model Name:</label>
-        <select name="model_name" id="model_name" required>
-            <option value="LR" {% if model_name=='LR' %}selected{% endif %}>Logistic Regression</option>
-            <option value="GB" {% if model_name=='GB' %}selected{% endif %}>Gradient Boost</option>
-            <option value="BOTH" {% if model_name=='BOTH' %}selected{% endif %}>Both</option>
-        </select>
+    <label for="model_name">Model Name:</label>
+    <select name="model_name" id="model_name" required>
+        <option value="LR" {% if model_name=='LR' %}selected{% endif %}>Logistic Regression</option>
+        <option value="GB" {% if model_name=='GB' %}selected{% endif %}>Gradient Boost</option>
+        <option value="BOTH" {% if model_name=='BOTH' %}selected{% endif %}>Both</option>
+    </select>
 
-        <button type="submit">Submit</button>
-    </form>
+    <button type="submit">Submit</button>
+</form>
 
-    {% if model_name in ['LR', 'GB', 'BOTH'] %}
-        <h2>Test IDs for Rank {{ rank }}</h2>
+{% if model_name in ['LR', 'GB', 'BOTH'] %}
+    <h2>Test IDs for Rank {{ rank }}</h2>
 
-        {% if lr or gb %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Selected Rank</th>
-                        <th>Total TC's</th>
-                        <th>TC's in LR</th>
-                        <th>Count of LR</th>
-                        <th>TC's in GB</th>
-                        <th>Count of GB</th>
-                        <th>Common in Both</th>
-                        <th>Count of Both</th>
-                        <th>Present in LR not in GB</th>
-                        <th>Count</th>
-                        <th>Present in GB not in LR</th>
-                        <th>Count</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ rank }}</td>
-                        <td>{{ total_tc }}</td>
-                        <td>
-                            <div class="scrollable-cell">
-                                <details>
-                                    <summary>Show LR IDs</summary>
-                                    {{ lr | join(', ') if lr else 'N/A' }}
-                                </details>
-                            </div>
-                        </td>
-                        <td>{{ lr | length }}</td>
-                        <td>
-                            <div class="scrollable-cell">
-                                <details>
-                                    <summary>Show GB IDs</summary>
-                                    {{ gb | join(', ') if gb else 'N/A' }}
-                                </details>
-                            </div>
-                        </td>
-                        <td>{{ gb | length }}</td>
-                        <td>
-                            <div class="scrollable-cell">
-                            {% if model_name == 'BOTH' %}
+    {% if lr_ids or gb_ids %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Selected Rank</th>
+                    <th>Total TC's</th>
+                    <th>TC's in LR</th>
+                    <th>Count of LR</th>
+                    <th>TC's in GB</th>
+                    <th>Count of GB</th>
+                    <th>Common in Both</th>
+                    <th>Count of Both</th>
+                    <th>Present in LR not in GB</th>
+                    <th>Count</th>
+                    <th>Present in GB not in LR</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ rank }}</td>
+                    <td>{{ total_tc }}</td>
+                    <td>
+                        <div class="scrollable-cell">
+                            <details>
+                                <summary>Show LR IDs</summary>
+                                {{ lr_ids | join(', ') if lr_ids else 'N/A' }}
+                            </details>
+                        </div>
+                    </td>
+                    <td>{{ lr_ids | length if lr_ids else 0 }}</td>
+                    <td>
+                        <div class="scrollable-cell">
+                            <details>
+                                <summary>Show GB IDs</summary>
+                                {{ gb_ids | join(', ') if gb_ids else 'N/A' }}
+                            </details>
+                        </div>
+                    </td>
+                    <td>{{ gb_ids | length if gb_ids else 0 }}</td>
+                    <td>
+                        <div class="scrollable-cell">
+                            {% if model_name == 'BOTH' and common_ids %}
                                 <details>
                                     <summary>Show Common IDs</summary>
                                     {{ common_ids | join(', ') }}
                                 </details>
                             {% else %} N/A {% endif %}
-                            </div>
-                        </td>
-                        <td>{{ common_ids | length if model_name == 'BOTH' else 'N/A' }}</td>
-                        <td>
-                            <div class="scrollable-cell">
-                            {% if model_name == 'BOTH' %}
+                        </div>
+                    </td>
+                    <td>{{ common_ids | length if model_name == 'BOTH' and common_ids else 'N/A' }}</td>
+                    <td>
+                        <div class="scrollable-cell">
+                            {% if model_name == 'BOTH' and unique_lr_only %}
                                 <details>
                                     <summary>Show Unique LR</summary>
                                     {{ unique_lr_only | join(', ') }}
                                 </details>
                             {% else %} N/A {% endif %}
-                            </div>
-                        </td>
-                        <td>{{ unique_lr_only | length if model_name == 'BOTH' else 'N/A' }}</td>
-                        <td>
-                            <div class="scrollable-cell">
-                            {% if model_name == 'BOTH' %}
+                        </div>
+                    </td>
+                    <td>{{ unique_lr_only | length if model_name == 'BOTH' and unique_lr_only else 'N/A' }}</td>
+                    <td>
+                        <div class="scrollable-cell">
+                            {% if model_name == 'BOTH' and unique_gb_only %}
                                 <details>
                                     <summary>Show Unique GB</summary>
                                     {{ unique_gb_only | join(', ') }}
                                 </details>
                             {% else %} N/A {% endif %}
-                            </div>
-                        </td>
-                        <td>{{ unique_gb_only | length if model_name == 'BOTH' else 'N/A' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        {% else %}
-            <p>No Test IDs found for the selected rank and model.</p>
-        {% endif %}
+                        </div>
+                    </td>
+                    <td>{{ unique_gb_only | length if model_name == 'BOTH' and unique_gb_only else 'N/A' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <p>No Test IDs found for the selected rank and model.</p>
     {% endif %}
+{% endif %}
 </body>
 </html>
